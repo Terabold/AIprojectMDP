@@ -1,7 +1,6 @@
 import pygame
 import random
 import os
-import json
 from scripts.GameManager import game_state_manager
 from scripts.constants import *
 from scripts.player import Player
@@ -9,7 +8,7 @@ from scripts.humanagent import InputHandler
 from scripts.tilemap import Tilemap
 from scripts.GameTimer import GameTimer
 from scripts.utils import (
-    load_image, load_images, Animation, load_sounds, 
+    load_images, Animation, 
     draw_debug_info, update_camera_smooth, MenuScreen,
     calculate_ui_constants, scale_font
 )
@@ -68,26 +67,18 @@ class GameMenu:
         self.congratulations_menu = CongratulationsScreen(self, "Congratulations!")
         self.active_menu = None
     
-    def _play_sound(self, sound_key):
-        if not self.environment.ai_train_mode and sound_key in self.environment.sfx:
-            random.choice(self.environment.sfx[sound_key]).play()
-    
     def resume_game(self):
         self.environment.menu = False
         self.active_menu = None
-        self._play_sound('click')
     
     def reset(self):
         self.environment.reset()
-        self._play_sound('click')
     
     def return_to_main(self):
         self.environment.return_to_main()
-        self._play_sound('click')
     
     def restart_game(self):
         self.environment.restart_game()
-        self._play_sound('click')
     
     def show_pause_menu(self):
         self.active_menu = self.pause_menu
@@ -358,11 +349,10 @@ class Environment:
                     random.choice(self.sfx['death']).play()
                 self.death_sound_played = True
             
-            # Auto-reset faster in AI mode
-            reset_frames = 20 if self.ai_train_mode else 40
+            reset_frames = 0 if self.ai_train_mode else 100
             if self.countframes >= reset_frames:
                 self.reset()
-                return True  # Signal episode ended for AI
+                return True  
         
         elif self.player.finishLevel:
             self.countframes += 1
@@ -402,14 +392,14 @@ class Environment:
         return False  # Episode continues
 
     def render(self):
-        self.display.fill((3, 3, 8))
+        self.display.fill((8, 10, 38))
     
         if self.stars:
             self.stars.render(self.display, offset=self.render_scroll)
 
         # Always render player and tilemap (needed for collision detection)
-        self.player.render(self.display, offset=self.render_scroll)
         self.tilemap.render(self.display, offset=self.render_scroll)
+        self.player.render(self.display, offset=self.render_scroll)
 
         # Render UI only for human players
         if not self.ai_train_mode:

@@ -25,8 +25,7 @@ class Game:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_F3:  
                     self.environment.debug_mode = not self.environment.debug_mode  
-                    print(f"Debug mode: {'ON' if self.environment.debug_mode else 'OFF'}")
-        
+                            
         if self.environment.menu:
             self.environment.process_menu_events(events)
         else:

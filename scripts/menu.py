@@ -1,9 +1,8 @@
+
 import pygame
-import random
 import os
-import json
 from scripts.constants import DISPLAY_SIZE, FONT, MENUBG    
-from scripts.utils import load_sounds, MenuScreen, render_text_with_shadow
+from scripts.utils import MenuScreen, render_text_with_shadow, play_ui_sound
 from scripts.GameManager import game_state_manager
 from scripts.utils import calculate_ui_constants
 
@@ -12,10 +11,6 @@ class Menu:
         pygame.font.init()
         
         self.screen = screen
-        self.sfx = {
-            'click': load_sounds('click'),
-            'music': pygame.mixer.Sound('data/sfx/music/music.mp3')
-        }  
         self.played_music = False
          
         self.UI_CONSTANTS = calculate_ui_constants(DISPLAY_SIZE)
@@ -23,24 +18,17 @@ class Menu:
         self.background = pygame.image.load(MENUBG)
         self.background = pygame.transform.scale(self.background, DISPLAY_SIZE)
         
-        
         self.player_type = game_state_manager.player_type
         self.selected_map = game_state_manager.selected_map
-        
         
         self.main_menu = MainMenuScreen(self)
         self.options_menu = OptionsMenuScreen(self)
         self.map_menu = MapSelectionScreen(self)
         
-        
         self.active_menu = None
         self.main_menu.enable()
         self.active_menu = self.main_menu
         
-    def _play_sound(self, sound_key):
-        if sound_key in self.sfx:
-            random.choice(self.sfx[sound_key]).play()
-            
     def _show_options_menu(self):
         self.main_menu.disable()
         self.options_menu.enable()
@@ -93,7 +81,6 @@ class Menu:
     def train_ai_unavailable(self):
         if isinstance(self.active_menu, MainMenuScreen):
             self.active_menu.flash_train_ai_button()
-        self._play_sound('click')
 
     def run(self):
         self.screen.blit(self.background, (0, 0))
@@ -114,7 +101,7 @@ class Menu:
 
 class MainMenuScreen(MenuScreen):
     def initialize(self):
-        self.title = "Super Terboy"
+        self.title = "Temu Celeste"
         self.train_ai_button_index = 2
         self.flash_timer = 0
         self.is_flashing = False
@@ -302,6 +289,7 @@ class MainMenuScreen(MenuScreen):
             shadow_offset,
             True  
         )
+
 class OptionsMenuScreen(MenuScreen):
     def initialize(self):
         self.title = "Options"
@@ -317,7 +305,6 @@ class OptionsMenuScreen(MenuScreen):
             self.menu._set_player_type(0)  
             self.flash_player_type_button()
 
-        
         start_y = int(DISPLAY_SIZE[1] * 0.3)  
         
         self.create_centered_button_list(
@@ -327,13 +314,11 @@ class OptionsMenuScreen(MenuScreen):
             start_y
         )
 
-        
         back_x = int(DISPLAY_SIZE[0] * 0.02)  
         back_y = int(DISPLAY_SIZE[1] * 0.02)  
         back_width = int(DISPLAY_SIZE[0] * 0.08)  
         
         self.create_button("←", self.menu._return_to_main, back_x, back_y, back_width)
-        
         
         info_font_size = int(DISPLAY_SIZE[1] * 0.02)  
         self.info_font = pygame.font.Font(FONT, info_font_size)
@@ -351,7 +336,6 @@ class OptionsMenuScreen(MenuScreen):
 
     def draw(self, surface):
         super().draw(surface)
-        
         
         if self.is_flashing and len(self.buttons) > self.player_type_button_index:
             button = self.buttons[self.player_type_button_index]

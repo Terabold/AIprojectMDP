@@ -1,4 +1,4 @@
-from scripts.utils import load_images, load_sounds, Animation
+from scripts.utils import load_images, load_sounds, Animation, load_sound
 from scripts.constants import PLAYERS_IMAGE_SIZE,IMGSCALE, FINISHSCALE
 import pygame
 
@@ -54,23 +54,26 @@ class AssetManager:
                 load_images('player/jump_falling', scale=PLAYERS_IMAGE_SIZE),
                 img_dur=4, loop=False 
             ),
-            'player/death': Animation(load_images('player/death', scale=(PLAYERS_IMAGE_SIZE[0]*2, PLAYERS_IMAGE_SIZE[1])), img_dur=6, loop=False),
+            'player/death': Animation(load_images('player/death', scale=(PLAYERS_IMAGE_SIZE[0]*4, PLAYERS_IMAGE_SIZE[1]*4)), img_dur=4, loop=False),
         }
         
-        # Pre-load sounds with volume
         self.sfx = {
-            'death': load_sounds('death', volume=0.2),
-            'jump': load_sounds('jump', volume=0.2),
-            'collide': load_sounds('wallcollide', volume=0.2),
+            'land': load_sounds('land', volume=0.04),
+            'death': load_sounds('death', volume=0.01),
+            'collide': load_sound('wallcollide/grab.ogg', volume=0.01),
             'finish': load_sounds('level_complete', volume=0.1),
-            'click': load_sounds('click', volume=0.1),
+            'music': load_sound('music/music.ogg', volume=0.1),
+            'jump': load_sound('jump/jump.ogg', volume=0.01),
+            'wall_jump_left': load_sound('jump/wall_jump_left.ogg', volume=0.01),
+            'wall_jump_right': load_sound('jump/wall_jump_right.ogg', volume=0.01)  
         }
 
     def get_rotated_image(self, tile_type, variant, rotation):
-        key = (tile_type, variant, rotation)  # Tuple is faster than string
+        key = (tile_type, variant, rotation)  
         
         if key not in self.rotated_cache:
             original = self.assets[tile_type][variant]
             self.rotated_cache[key] = pygame.transform.rotate(original, rotation)
         
         return self.rotated_cache[key]
+    

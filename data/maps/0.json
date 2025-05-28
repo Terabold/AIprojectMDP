@@ -2249,31 +2249,28 @@
             ]
         },
         "11;7": {
-            "type": "spikes",
-            "variant": 0,
+            "type": "kill",
+            "variant": 6,
             "pos": [
                 11,
                 7
-            ],
-            "rotation": 0
+            ]
         },
         "12;7": {
-            "type": "spikes",
-            "variant": 0,
+            "type": "kill",
+            "variant": 5,
             "pos": [
                 12,
                 7
-            ],
-            "rotation": 0
+            ]
         },
         "13;7": {
-            "type": "spikes",
-            "variant": 0,
+            "type": "kill",
+            "variant": 4,
             "pos": [
                 13,
                 7
-            ],
-            "rotation": 0
+            ]
         },
         "11;6": {
             "type": "kill",

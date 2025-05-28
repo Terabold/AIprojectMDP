@@ -11,7 +11,6 @@ from scripts.GameManager import game_state_manager
 class EditorMenu:
     def __init__(self, display):
         self.screen = display
-        self.sfx = {'click': load_sounds('click')}
         
         self.background = pygame.transform.scale(
             pygame.image.load(MENUBG).convert(), 
@@ -24,10 +23,6 @@ class EditorMenu:
         self.editor = None
         self.map_menu = EditorMapSelectionScreen(self)
         self.map_menu.enable()
-
-    def _play_sound(self, sound_key):
-        if sound_key in self.sfx:
-            random.choice(self.sfx[sound_key]).play()
 
     def _select_map(self, map_file):
         self.selected_map = map_file
