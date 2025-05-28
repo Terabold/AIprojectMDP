@@ -1,6 +1,8 @@
 from scripts.utils import load_images, load_sounds, Animation, load_sound
 from scripts.constants import PLAYERS_IMAGE_SIZE,IMGSCALE, FINISHSCALE
 import pygame
+from functools import lru_cache
+
 
 class AssetManager:
     _instance = None
@@ -27,7 +29,7 @@ class AssetManager:
             'spawners': load_images('tiles/spawners', scale=IMGSCALE),
             'spikes': load_images('tiles/spikes', scale=IMGSCALE),
             'finish': load_images('tiles/finish', scale=FINISHSCALE),
-            'finishanimation': Animation(load_images('tiles/finish', scale=FINISHSCALE), img_dur=5, loop=True),
+            'finish_animation': Animation(load_images('tiles/finish', scale=FINISHSCALE), img_dur=5, loop=True),
             'kill': load_images('tiles/kill', scale=IMGSCALE),
             'player/finish': Animation(load_images('player/finish', scale=PLAYERS_IMAGE_SIZE), img_dur=10, loop=False),
             'player/run': Animation(load_images('player/run', scale=PLAYERS_IMAGE_SIZE), img_dur=5),
@@ -54,20 +56,20 @@ class AssetManager:
                 load_images('player/jump_falling', scale=PLAYERS_IMAGE_SIZE),
                 img_dur=4, loop=False 
             ),
-            'player/death': Animation(load_images('player/death', scale=(PLAYERS_IMAGE_SIZE[0]*4, PLAYERS_IMAGE_SIZE[1]*4)), img_dur=3, loop=False),
+            'player/death': Animation(load_images('player/death', scale=(PLAYERS_IMAGE_SIZE[0]*4, PLAYERS_IMAGE_SIZE[1]*4)), img_dur=2, loop=False),
         }
         
         self.sfx = {
             'land': load_sound('land/land.ogg', volume=0.02),
             'death': load_sound('death/death.ogg', volume=0.01),
-            'collide': load_sound('wallcollide/grab.ogg', volume=0.01),
+            'collide': load_sound('wallcollide/grab.wav', volume=0.01),
             'finish': load_sound('finish/finish.ogg', volume=0.1),
-            'music': load_sound('music/music.ogg', volume=0.1),
             'jump': load_sound('jump/jump.ogg', volume=0.01),
             'wall_jump_left': load_sound('jump/wall_jump_left.ogg', volume=0.01),
             'wall_jump_right': load_sound('jump/wall_jump_right.ogg', volume=0.01)  
         }
 
+    @lru_cache(maxsize=4)
     def get_rotated_image(self, tile_type, variant, rotation):
         key = (tile_type, variant, rotation)  
         

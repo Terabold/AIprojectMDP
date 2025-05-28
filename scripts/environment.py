@@ -69,14 +69,18 @@ class GameMenu:
     def resume_game(self):
         self.environment.menu = False
         self.active_menu = None
+        # Resume music when returning to game
+        self.environment.resume_music()
     
     def reset(self):
+        # Don't stop music here - let the environment handle it
         self.environment.reset()
     
     def return_to_main(self):
         self.environment.return_to_main()
     
     def restart_game(self):
+        # Don't stop music here - let the environment handle it
         self.environment.restart_game()
     
     def show_pause_menu(self):
@@ -84,18 +88,24 @@ class GameMenu:
         self.pause_menu.enable()
         self.level_complete_menu.disable()
         self.congratulations_menu.disable()
+        # Pause music when showing pause menu
+        self.environment.pause_music()
     
     def show_level_complete_menu(self):
         self.active_menu = self.level_complete_menu
         self.pause_menu.disable()
         self.level_complete_menu.enable()
         self.congratulations_menu.disable()
+        # Pause music when level is complete (instead of stopping)
+        self.environment.pause_music()
     
     def show_congratulations_menu(self):
         self.active_menu = self.congratulations_menu
         self.pause_menu.disable()
         self.level_complete_menu.disable()
         self.congratulations_menu.enable()
+        # Pause music when showing congratulations (instead of stopping)
+        self.environment.pause_music()
     
     def load_next_map(self):
         current_map = game_state_manager.selected_map
@@ -106,6 +116,8 @@ class GameMenu:
             
             if f'{current_index}.json' in map_files and current_index < len(map_files) - 1:
                 self.environment.load_map_id(current_index + 1)
+                # Resume music when loading next map
+                self.environment.resume_music()
             else:
                 self.reset()
         else:
@@ -125,6 +137,7 @@ class GameMenu:
 
 from scripts.assets import AssetManager
 from scripts.stars import Stars
+
 class Environment:
     def __init__(self, display, clock, ai_train_mode=False):
         self.player_type = game_state_manager.player_type
@@ -142,6 +155,10 @@ class Environment:
         self.scroll = [0, 0]
         self.render_scroll = [0, 0]
         self.rotated_assets = {}
+        
+        # Music state variables
+        self.music_playing = False
+        self.music_paused = False
 
         # Initialize fonts only if not in AI mode
         if not self.ai_train_mode:
@@ -151,7 +168,6 @@ class Environment:
         else:
             self.fps_font = None
             self.timer_font = None
-
 
         # Initialize components
         self.tilemap = Tilemap(self, tile_size=TILE_SIZE)
@@ -178,12 +194,67 @@ class Environment:
         if not self.ai_train_mode:
             self.input_handler = InputHandler()
             self.game_menu = GameMenu(self)
+            self.start_music()
         else:
             self.input_handler = None
             self.game_menu = None
 
+    def start_music(self):
+        """Start playing background music"""
+        if not self.ai_train_mode and not self.music_playing:
+            try:
+                pygame.mixer.music.load(MUSIC_PATH)
+                pygame.mixer.music.set_volume(MUSIC_VOLUME)
+                pygame.mixer.music.play(-1)  # Loop indefinitely
+                self.music_playing = True
+                self.music_paused = False
+                print("Music started successfully")
+            except Exception as e:
+                print(f"Error starting music: {e}")
+
+    def play_music(self):
+        """Alias for start_music for backward compatibility"""
+        self.start_music()
+
+    def pause_music(self):
+        """Pause the background music"""
+        if not self.ai_train_mode and self.music_playing and not self.music_paused:
+            try:
+                pygame.mixer.music.pause()
+                self.music_paused = True
+                print("Music paused")
+            except Exception as e:
+                print(f"Error pausing music: {e}")
+
+    def resume_music(self):
+        """Resume the paused background music"""
+        if not self.ai_train_mode and self.music_playing and self.music_paused:
+            try:
+                pygame.mixer.music.unpause()
+                self.music_paused = False
+                print("Music resumed")
+            except Exception as e:
+                print(f"Error resuming music: {e}")
+
+    def stop_music(self):
+        """Stop the background music"""
+        if not self.ai_train_mode and self.music_playing:
+            try:
+                pygame.mixer.music.stop()
+                self.music_playing = False
+                self.music_paused = False
+                print("Music stopped")
+            except Exception as e:
+                print(f"Error stopping music: {e}")
+
+    def restart_music(self):
+        """Restart the music from the beginning"""
+        if not self.ai_train_mode:
+            self.stop_music()
+            self.start_music()
+
     def update_timer(self):
-        # Start timer on first movement
+        # Start timer and music on first movement
         if not self.movement_started and (self.keys['left'] or self.keys['right'] or self.keys['jump']):
             self.movement_started = True
             self.timer.start()
@@ -207,7 +278,7 @@ class Environment:
             return
             
         timer_pos = (25, 10)
-        display_time = self.timer.final_time if not self.timer.is_running else self.timer.current_time
+        display_time = self.timer.get_display_time()
         time_str = self.timer.format_time(display_time)
         timer_text = self.timer_font.render(time_str, True, (255, 255, 255))
         
@@ -267,8 +338,15 @@ class Environment:
         # Reset timer and camera
         self.reset_timer()
         self.center_scroll_on_player()
+        
+        # Resume music if it was paused (but don't restart if it was stopped)
+        if not self.ai_train_mode and self.music_paused:
+            self.resume_music()
 
     def restart_game(self):
+        # Restart music when restarting the entire game
+        if not self.ai_train_mode:
+            self.restart_music()
         self.load_map_id(0)
 
     def load_map_id(self, map_id):
@@ -288,8 +366,13 @@ class Environment:
         self.reset_timer()
         self.center_scroll_on_player()
         self.menu = False
+        
+        # Ensure music is playing when loading a new map (if not in AI mode)
+        if not self.ai_train_mode and not self.music_playing:
+            self.start_music()
     
     def return_to_main(self):
+        self.stop_music()  # Stop music when returning to main menu
         self.reset()
         game_state_manager.returnToPrevState()
 
@@ -330,6 +413,7 @@ class Environment:
                 elif self.menu and not self.player.death and not self.player.finishLevel:
                     self.menu = False
                     self.game_menu.active_menu = None
+                    self.resume_music()  # Resume music when closing pause menu
                 
         self.keys, self.buffer_times = self.input_handler.process_events(events, self.menu)
     
@@ -339,7 +423,8 @@ class Environment:
         # Update animations (essential for gameplay logic)
         self.assets['finish'].update()
 
-        self.stars.update(dt)
+        if self.stars:
+            self.stars.update(dt)
         
         if self.player.death:
             self.countframes += 1
@@ -348,7 +433,7 @@ class Environment:
                     self.sfx['death'].play()
                 self.death_sound_played = True
             
-            reset_frames = 0 if self.ai_train_mode else 120
+            reset_frames = 0 if self.ai_train_mode else 90
             if self.countframes >= reset_frames:
                 self.reset()
                 return True  
@@ -359,6 +444,8 @@ class Environment:
                 if not self.ai_train_mode:  # Only play sound for human players
                     self.sfx['finish'].play()
                 self.finish_sound_played = True
+                # Pause music on level finish (instead of stopping)
+                self.pause_music()
             
             # Handle level completion
             completion_frames = 30 if self.ai_train_mode else 90
@@ -429,6 +516,7 @@ class Environment:
                     else:
                         self.menu = False
                         self.game_menu.active_menu = None
+                        self.resume_music()  # Resume music when closing menu with escape
             
             self.game_menu.update(events)
 

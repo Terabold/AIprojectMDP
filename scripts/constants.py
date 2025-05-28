@@ -3,7 +3,9 @@ import pygame
 pygame.init()
 info = pygame.display.Info()
 
-# Display and tile setup
+# =============================================================================
+# DISPLAY CONFIGURATION
+# =============================================================================
 screen_width, screen_height = info.current_w, info.current_h
 DISPLAY_SIZE = (screen_width, screen_height)
 aspect_x = DISPLAY_SIZE[0] - (DISPLAY_SIZE[0] % 16)
@@ -13,7 +15,9 @@ TILE_SIZE = DISPLAY_SIZE[0] // 28
 
 FPS = 60
 
-# Physics
+# =============================================================================
+# PHYSICS CONSTANTS
+# =============================================================================
 PLAYER_SPEED = 0.8 * TILE_SIZE / 36
 JUMP_SPEED = 14 * TILE_SIZE / 36
 WALLSLIDE_SPEED = 0.7 * TILE_SIZE / 36
@@ -21,37 +25,40 @@ WALLJUMP_X_SPEED = 9 * TILE_SIZE / 36
 WALLJUMP_Y_SPEED = 12 * TILE_SIZE / 36
 GRAVITY_UP = 0.55 * TILE_SIZE / 36
 GRAVITY_DOWN = 0.3 * TILE_SIZE / 36
-ACCELERAION = 0.001 * TILE_SIZE / 36
-DECCELARATION = 0.1 * TILE_SIZE / 36
+ACCELERAION = 0.001 * TILE_SIZE / 36  # Note: Consider fixing the typo to ACCELERATION
+DECCELARATION = 0.1 * TILE_SIZE / 36  # Note: Consider fixing the typo to DECELERATION
 MAX_X_SPEED = 8 * TILE_SIZE / 36
 MAX_Y_SPEED = 11 * TILE_SIZE / 36
 WALL_MOMENTUM_PRESERVE = 0.15
 WALL_MOMENTUM_FRAMES = 3
+
+# =============================================================================
+# GAMEPLAY TIMING
+# =============================================================================
 PLAYER_BUFFER = 5
 COYOTE_TIME = 6
 BASE_IMG_DUR = 20
 
-# Hitboxes and scaling
+# Death and finish delays (in frames)
+DEATH_DELAY_FRAMES = 90
+DEATH_DELAY_FRAMES_AI = 0
+FINISH_DELAY_FRAMES = 90
+FINISH_DELAY_FRAMES_AI = 30
+
+# Jump animation timings
+JUMP_ANTICIPATION_FRAMES = 3
+JUMP_PEAK_FRAMES = 6
+JUMP_LANDING_FRAMES = 8
+
+# =============================================================================
+# SIZE AND SCALING
+# =============================================================================
 PLAYERS_SIZE = (TILE_SIZE, TILE_SIZE)
 PLAYERS_IMAGE_SIZE = (PLAYERS_SIZE[0], PLAYERS_SIZE[1])
 
-# Tile types
-PHYSICS_TILES = {'grass', 'stone', 'pinkrock'}
-AUTOTILE_TYPES = {'grass', 'stone', 'kill', 'pinkrock'}
-INTERACTIVE_TILES = {'finish', 'spikes', 'kill', 'portal up', 'portal down'}
-
-# String
-POS = 'pos'
-TYPE = 'type'
-TILEMAP = 'tilemap'
-OFFGRID = 'offgrid'
-LOWEST_Y = 'lowest_y'
-VARIANT = 'variant'
-SPAWNER = 'spawners'
-UP = ' up'
-ROTATION = 'rotation'
-
-BASE_IMG_PATH = 'data/images/'
+# Image scaling presets
+IMGSCALE = (TILE_SIZE, TILE_SIZE)
+FINISHSCALE = (TILE_SIZE, TILE_SIZE * 2)
 
 # Spike properties
 SPIKE_SIZE = (0.6, 0.25)
@@ -68,6 +75,53 @@ SPIKE_POSITION_OFFSETS = {
     270: lambda tile_x, tile_y, spike_w, spike_h, tile_size: (
         tile_x, tile_y + (tile_size - spike_w) // 2, spike_h, spike_w
     ),
+}
+
+# =============================================================================
+# TILE DEFINITIONS
+# =============================================================================
+PHYSICS_TILES = {'grass', 'stone', 'pinkrock'}
+AUTOTILE_TYPES = {'grass', 'stone', 'kill', 'pinkrock'}
+INTERACTIVE_TILES = {'finish', 'spikes', 'kill', 'portal up', 'portal down'}
+
+# =============================================================================
+# STRING CONSTANTS
+# =============================================================================
+# Tile map keys
+POS = 'pos'
+TYPE = 'type'
+TILEMAP = 'tilemap'
+OFFGRID = 'offgrid'
+LOWEST_Y = 'lowest_y'
+VARIANT = 'variant'
+SPAWNER = 'spawners'
+UP = ' up'
+ROTATION = 'rotation'
+
+# =============================================================================
+# FILE PATHS
+# =============================================================================
+BASE_IMG_PATH = 'data/images/'
+FONT = r'data\fonts\Menu.ttf'
+MENUBG = r'data\images\menugbg.png'
+
+# Music path
+MUSIC_PATH = r'data\sfx\music\music.ogg'
+
+# =============================================================================
+# AUDIO SETTINGS
+# =============================================================================
+MUSIC_VOLUME = 0.1
+
+# Sound effect volumes
+SOUND_VOLUMES = {
+    'land': 0.02,
+    'death': 0.01,
+    'collide': 0.01,
+    'finish': 0.1,
+    'jump': 0.01,
+    'wall_jump_left': 0.01,
+    'wall_jump_right': 0.01
 }
 
 # Image scaling

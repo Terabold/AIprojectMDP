@@ -237,11 +237,6 @@ class Tilemap:
                     img = self._get_image(base_type, tile[VARIANT])
                     if img.get_height() != self.tile_size * 2:
                         img = pygame.transform.scale(img, (self.tile_size, self.tile_size * 2))
-                    
-                    # Mark the down tile as processed if it exists
-                    down_loc = f"{x};{y + 1}"
-                    if down_loc in self.tilemap:
-                        processed_tiles.add(down_loc)
                 else:
                     img = self._get_image(base_type, tile[VARIANT])
                 

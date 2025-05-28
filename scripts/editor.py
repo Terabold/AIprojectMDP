@@ -288,7 +288,6 @@ class Editor:
             'spawners': load_images('tiles/spawners', scale=IMGscale),
             'spikes': load_images('tiles/spikes', scale=IMGscale),
             'finish': load_images('tiles/finish', scale=(IMGscale[0], IMGscale[1]*2)),
-            'finish_animation': load_images('tiles/finish', scale=(IMGscale[0], IMGscale[1]*2)),
             'kill': load_images('tiles/kill', scale=IMGscale),
         }
         self.rotated_assets = {}
