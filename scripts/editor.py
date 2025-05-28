@@ -1,7 +1,6 @@
 import sys
 import pygame
 import os
-import random
 import json
 from scripts.utils import load_images, load_image, find_next_numeric_filename, MenuScreen, load_sounds, render_text_with_shadow
 from scripts.tilemap import Tilemap

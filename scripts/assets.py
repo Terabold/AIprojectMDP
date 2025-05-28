@@ -54,14 +54,14 @@ class AssetManager:
                 load_images('player/jump_falling', scale=PLAYERS_IMAGE_SIZE),
                 img_dur=4, loop=False 
             ),
-            'player/death': Animation(load_images('player/death', scale=(PLAYERS_IMAGE_SIZE[0]*4, PLAYERS_IMAGE_SIZE[1]*4)), img_dur=4, loop=False),
+            'player/death': Animation(load_images('player/death', scale=(PLAYERS_IMAGE_SIZE[0]*4, PLAYERS_IMAGE_SIZE[1]*4)), img_dur=3, loop=False),
         }
         
         self.sfx = {
-            'land': load_sounds('land', volume=0.04),
-            'death': load_sounds('death', volume=0.01),
+            'land': load_sound('land/land.ogg', volume=0.02),
+            'death': load_sound('death/death.ogg', volume=0.01),
             'collide': load_sound('wallcollide/grab.ogg', volume=0.01),
-            'finish': load_sounds('level_complete', volume=0.1),
+            'finish': load_sound('finish/finish.ogg', volume=0.1),
             'music': load_sound('music/music.ogg', volume=0.1),
             'jump': load_sound('jump/jump.ogg', volume=0.01),
             'wall_jump_left': load_sound('jump/wall_jump_left.ogg', volume=0.01),

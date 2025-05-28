@@ -1,5 +1,4 @@
 import pygame
-import random
 import os
 from scripts.GameManager import game_state_manager
 from scripts.constants import *
@@ -346,10 +345,10 @@ class Environment:
             self.countframes += 1
             if not self.death_sound_played:
                 if not self.ai_train_mode:  # Only play sound for human players
-                    random.choice(self.sfx['death']).play()
+                    self.sfx['death'].play()
                 self.death_sound_played = True
             
-            reset_frames = 0 if self.ai_train_mode else 100
+            reset_frames = 0 if self.ai_train_mode else 120
             if self.countframes >= reset_frames:
                 self.reset()
                 return True  
@@ -358,7 +357,7 @@ class Environment:
             self.countframes += 1
             if not self.finish_sound_played:
                 if not self.ai_train_mode:  # Only play sound for human players
-                    random.choice(self.sfx['finish']).play()
+                    self.sfx['finish'].play()
                 self.finish_sound_played = True
             
             # Handle level completion

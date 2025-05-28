@@ -1,5 +1,4 @@
 from scripts.constants import *
-import random
 import pygame
 
 class Player:
@@ -133,7 +132,7 @@ class Player:
 
         # Play land sound effect when landing (but not during startup)
         if self.grounded and not self.was_grounded and self.velocity[1] >= 0:
-            random.choice(self.sfx['land']).play()
+            self.sfx['land'].play()
             self.jump_state = 'landing'
             self.landing_timer = 0
 
