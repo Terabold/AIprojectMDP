@@ -2,6 +2,7 @@
 import json
 import pygame
 from scripts.constants import *
+from pathlib import Path
 
 class Tilemap:
     def __init__(self, game, tile_size=16, env=True):

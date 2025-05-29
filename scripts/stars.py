@@ -23,7 +23,7 @@ class Star:
             img = self.anim.img()
             if self.scale != 1.0:
                 size = (int(img.get_width() * self.scale), int(img.get_height() * self.scale))
-                self._cached_img = pygame.transform.smoothscale(img, size)
+                self._cached_img = pygame.transform.scale(img, size)
             else:
                 self._cached_img = img
             self._last_frame = current_frame

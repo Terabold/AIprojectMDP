@@ -1,19 +1,20 @@
 import pygame
 import os
 from scripts.constants import DISPLAY_SIZE, FONT, MENUBG    
-from scripts.utils import MenuScreen, render_text_with_shadow, play_ui_sound
+from scripts.utils import MenuScreen, render_text_with_shadow
 from scripts.GameManager import game_state_manager
 from scripts.utils import calculate_ui_constants
 
 class Menu:
-    def __init__(self, screen):
+    def __init__(self, screen, clock):
         pygame.font.init()
         
         self.screen = screen
+        self.clock = clock
         self.played_music = False
-         
+
         self.UI_CONSTANTS = calculate_ui_constants(DISPLAY_SIZE)
-        
+
         self.background = pygame.image.load(MENUBG)
         self.background = pygame.transform.scale(self.background, DISPLAY_SIZE)
         
@@ -112,14 +113,14 @@ class Menu:
                 if event.key == pygame.K_ESCAPE:
                     self._handle_escape()
 
-        pygame.time.Clock().tick(20)  
+        self.clock.tick(20)
 
         self.active_menu.update(events)
         self.active_menu.draw(self.screen)
 
 class MainMenuScreen(MenuScreen):
     def initialize(self):
-        self.title = "Temu Celeste"
+        self.title = "Ascent"
         self.train_ai_button_index = 2
         self.flash_timer = 0
         self.is_flashing = False
@@ -263,7 +264,7 @@ class MainMenuScreen(MenuScreen):
         
         # Add credits at the bottom of the backdrop
         credits_y = backdrop_y + backdrop_height - int(DISPLAY_SIZE[1] * 0.04)
-        credits_text = "Credit to: Roeeov, Idanh100, Koron"
+        credits_text = "Creator: Ariel AKA Terbold"
         credits_color = (255, 215, 0, 200)
         
         render_text_with_shadow(

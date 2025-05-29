@@ -155,7 +155,7 @@ class Environment:
         # Initialize fonts only if not in AI mode
         if not self.ai_train_mode:
             pygame.font.init()
-            self.fps_font = pygame.font.Font(None, scale_font(36, DISPLAY_SIZE))
+            self.fps_font = pygame.font.Font(FONT, scale_font(36, DISPLAY_SIZE))
             self.timer_font = pygame.font.Font(FONT, scale_font(24, DISPLAY_SIZE))
         else:
             self.fps_font = None
@@ -238,19 +238,19 @@ class Environment:
         self.timer.update()
     
     def render_timer(self):
-        # Skip timer rendering in AI mode
+        # Skip rendering if in AI mode or font is missing
         if self.ai_train_mode or not self.timer_font:
             return
-            
-        timer_pos = (25, 10)
-        display_time = self.timer.get_display_time()
-        time_str = self.timer.format_time(display_time)
-        timer_text = self.timer_font.render(time_str, True, (255, 255, 255))
-        
-        # Simple shadow effect
-        shadow_text = self.timer_font.render(time_str, True, (0, 0, 0))
-        self.display.blit(shadow_text, (timer_pos[0] + 2, timer_pos[1] + 2))
-        self.display.blit(timer_text, timer_pos)
+
+        pos = (25, 10)
+        time_str = self.timer.get_formatted_time()
+
+        # Render once
+        rendered_text = self.timer_font.render(time_str, True, (255, 255, 255))
+        shadow = self.timer_font.render(time_str, True, (0, 0, 0))
+
+        self.display.blit(shadow, (pos[0] + 2, pos[1] + 2))
+        self.display.blit(rendered_text, pos)
 
     def reset_timer(self):
         self.timer.reset()
@@ -452,8 +452,8 @@ class Environment:
             self.render_timer()
             
             fps = self.clock.get_fps()
-            fps_text = self.fps_font.render(f"FPS: {int(fps)}", True, (255, 255, 0))
-            self.display.blit(fps_text, (10, 80))
+            fps_text = self.fps_font.render(f"{int(fps)}", True, (200, 120, 255))
+            self.display.blit(fps_text, (DISPLAY_SIZE[0]*0.95, 10))
 
             if self.debug_mode and not self.menu:
                 self.debug_render()

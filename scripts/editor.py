@@ -209,33 +209,45 @@ class Editor:
         }
     
     def handle_tile_placement(self, tile_pos, mpos):
-        if not (self.clicking and self.ongrid and self.canPlaceTile(mpos)):
+        if not self.clicking:
             return
-            
-        tile_type = self.tile_list[self.tile_group]
         
-        # Remove existing spawners if placing new one
+        tile_type = self.tile_list[self.tile_group]
         if tile_type == 'spawners' and self.count_spawners() > 0:
             self.tilemap.extract([('spawners', 0), ('spawners', 1)], keep=False)
-        
-        # Handle 2-tile blocks
-        if tile_type in {'portal', 'finish'}:
-            self.placeGridBlock(tile_pos, tile_type + ' up')
-            self.placeGridBlock((tile_pos[0], tile_pos[1] + 1), tile_type + ' down')
+
+        if self.ongrid:
+            if not self.canPlaceTile(mpos):
+                return
+            if tile_type in {'portal', 'finish'}:
+                self.placeGridBlock(tile_pos, tile_type + ' up')
+                self.placeGridBlock((tile_pos[0], tile_pos[1] + 1), tile_type + ' down')
+            else:
+                tile_data = {
+                    'type': tile_type,
+                    'variant': self.tile_variant,
+                    'pos': tile_pos
+                }
+                if tile_type == 'spikes':
+                    tile_data['rotation'] = self.current_rotation
+                self.tilemap.tilemap[f"{tile_pos[0]};{tile_pos[1]}"] = tile_data
         else:
-            # Handle single tiles
+            if tile_type in {'portal', 'finish'}:
+                return
+
+            world_pos = [
+                (mpos[0] + self.scroll[0]) / self.tilemap.tile_size,
+                (mpos[1] + self.scroll[1]) / self.tilemap.tile_size
+            ]
+
             tile_data = {
                 'type': tile_type,
                 'variant': self.tile_variant,
-                'pos': tile_pos if self.ongrid else ((mpos[0] + self.scroll[0]) / self.tilemap.tile_size, 
-                                                    (mpos[1] + self.scroll[1]) / self.tilemap.tile_size)
+                'pos': world_pos
             }
-            
             if tile_type == 'spikes':
                 tile_data['rotation'] = self.current_rotation
-            
-            if self.ongrid:
-                self.tilemap.tilemap[f"{tile_pos[0]};{tile_pos[1]}"] = tile_data
+
             elif tile_type not in PHYSICS_TILES:
                 self.tilemap.offgrid_tiles.append(tile_data)
                 

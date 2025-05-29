@@ -56,12 +56,9 @@ JUMP_LANDING_FRAMES = 8
 PLAYERS_SIZE = (TILE_SIZE, TILE_SIZE)
 PLAYERS_IMAGE_SIZE = (PLAYERS_SIZE[0], PLAYERS_SIZE[1])
 
-# Image scaling presets
-IMGSCALE = (TILE_SIZE, TILE_SIZE)
-FINISHSCALE = (TILE_SIZE, TILE_SIZE * 2)
 
 # Spike properties
-SPIKE_SIZE = (0.6, 0.25)
+SPIKE_SIZE = (0.8, 0.25)
 SPIKE_POSITION_OFFSETS = {
     0: lambda tile_x, tile_y, spike_w, spike_h, tile_size: (
         tile_x + (tile_size - spike_w) // 2, tile_y + (tile_size - spike_h), spike_w, spike_h
@@ -80,6 +77,7 @@ SPIKE_POSITION_OFFSETS = {
 # =============================================================================
 # TILE DEFINITIONS
 # =============================================================================
+
 PHYSICS_TILES = {'grass', 'stone', 'pinkrock'}
 AUTOTILE_TYPES = {'grass', 'stone', 'kill', 'pinkrock'}
 INTERACTIVE_TILES = {'finish', 'spikes', 'kill', 'portal up', 'portal down'}
@@ -103,7 +101,6 @@ ROTATION = 'rotation'
 # =============================================================================
 BASE_IMG_PATH = 'data/images/'
 FONT = r'data\fonts\Menu.ttf'
-MENUBG = r'data\images\menugbg.png'
 
 # Music path
 MUSIC_PATH = r'data\sfx\music\music.ogg'
@@ -111,7 +108,7 @@ MUSIC_PATH = r'data\sfx\music\music.ogg'
 # =============================================================================
 # AUDIO SETTINGS
 # =============================================================================
-MUSIC_VOLUME = 0.1
+MUSIC_VOLUME = 0.05
 
 # Sound effect volumes
 SOUND_VOLUMES = {
@@ -131,10 +128,24 @@ FONT = r'data\fonts\Menu.ttf'
 
 # Editor/UI
 EDITOR_SCROLL_SPEED = 12
-MENUBG = r'data\images\menugbg.png'
+MENUBG = r'data\images\menugbg.jpg'
 MENUTXTCOLOR = (120, 83, 58)
 WHITE = (255, 255, 255)
 
+# =============================================================================
+# utils related
+# =============================================================================
+
+SOUND_EXTENSIONS = ('.mp3', '.wav', '.ogg')
+DEFAULT_REMOVE_COLOR = (0, 0, 0)
+DEFAULT_SOUND_VOLUME = 0.05
+DEFAULT_HOVER_VOLUME = 0.01
+DEFAULT_CLICK_VOLUME = 0.05
+MIN_FONT_SIZE = 12
+MAX_FONT_SIZE = 72
+REFERENCE_SIZE = (1920, 1080)
+
+# =============================================================================
 def calculate_ui_constants(display_size):
     ref_width, ref_height = 1920, 1080
     width_scale = display_size[0] / ref_width

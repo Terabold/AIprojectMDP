@@ -17,13 +17,13 @@ class GameTimer:
             self.is_running = True
     
     def update(self):
-        if not self.is_running or self.is_paused:
+        if not (self.is_running and not self.is_paused):
             return
-            
-        current_tick = pygame.time.get_ticks()
-        if current_tick - self._last_update_tick >= 16:  # ~60fps update rate
-            self._cached_time = (current_tick - self.start_ticks - self.paused_duration) * 0.001
-            self._last_update_tick = current_tick
+        now = pygame.time.get_ticks()
+        if now - self._last_update_tick >= 16:
+            self._cached_time = (now - self.start_ticks - self.paused_duration) * 0.001
+            self._last_update_tick = now
+
     
     def pause(self):
         if self.is_running and not self.is_paused:
@@ -51,11 +51,12 @@ class GameTimer:
         self._cached_time = 0.0
         self._last_update_tick = 0
     
-    def format_time(self, time_value):
-        total_ms = int(time_value * 1000)
-        minutes, remainder = divmod(total_ms, 60000)
-        seconds, milliseconds = divmod(remainder, 1000)
-        return f"{minutes:02d}:{seconds:02d}.{milliseconds:03d}"
+    def format_time(self, t):
+        ms = int(t * 1000)
+        m, ms = divmod(ms, 60000)
+        s, ms = divmod(ms, 1000)
+        return f"{m:02}:{s:02}.{ms:03}"
+
     
     def get_display_time(self):
         if not self.is_running:
