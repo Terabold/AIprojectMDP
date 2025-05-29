@@ -1,0 +1,86 @@
+{
+    "tilemap": {
+        "8;6": {
+            "type": "grass",
+            "variant": 0,
+            "pos": [
+                8,
+                6
+            ]
+        },
+        "9;6": {
+            "type": "grass",
+            "variant": 0,
+            "pos": [
+                9,
+                6
+            ]
+        },
+        "10;6": {
+            "type": "grass",
+            "variant": 0,
+            "pos": [
+                10,
+                6
+            ]
+        },
+        "11;6": {
+            "type": "grass",
+            "variant": 0,
+            "pos": [
+                11,
+                6
+            ]
+        },
+        "12;6": {
+            "type": "grass",
+            "variant": 0,
+            "pos": [
+                12,
+                6
+            ]
+        },
+        "13;6": {
+            "type": "grass",
+            "variant": 0,
+            "pos": [
+                13,
+                6
+            ]
+        },
+        "14;6": {
+            "type": "grass",
+            "variant": 0,
+            "pos": [
+                14,
+                6
+            ]
+        },
+        "9;5": {
+            "type": "spawners",
+            "variant": 0,
+            "pos": [
+                9,
+                5
+            ]
+        },
+        "13;4": {
+            "type": "finish up",
+            "variant": 0,
+            "pos": [
+                13,
+                4
+            ]
+        },
+        "13;5": {
+            "type": "finish down",
+            "variant": 0,
+            "pos": [
+                13,
+                5
+            ]
+        }
+    },
+    "offgrid": [],
+    "lowest_y": 6
+}

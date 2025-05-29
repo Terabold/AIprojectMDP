@@ -11,7 +11,7 @@ DISPLAY_SIZE = (screen_width, screen_height)
 aspect_x = DISPLAY_SIZE[0] - (DISPLAY_SIZE[0] % 16)
 aspect_y = DISPLAY_SIZE[1] - (DISPLAY_SIZE[1] % 9)
 DISPLAY_SIZE = (aspect_x, aspect_y)
-TILE_SIZE = DISPLAY_SIZE[0] // 28
+TILE_SIZE = DISPLAY_SIZE[0] // 24
 
 FPS = 60
 
@@ -19,18 +19,31 @@ FPS = 60
 # PHYSICS CONSTANTS
 # =============================================================================
 PLAYER_SPEED = 0.8 * TILE_SIZE / 36
-JUMP_SPEED = 14 * TILE_SIZE / 36
-WALLSLIDE_SPEED = 0.7 * TILE_SIZE / 36
-WALLJUMP_X_SPEED = 9 * TILE_SIZE / 36
-WALLJUMP_Y_SPEED = 12 * TILE_SIZE / 36
+JUMP_SPEED = 11 * TILE_SIZE / 36
+WALLSLIDE_SPEED = 1 * TILE_SIZE / 36
+
+# Enhanced wall jump with greater setback
+WALLJUMP_X_SPEED = 8 * TILE_SIZE / 36  # Increased from 8 for more setback
+WALLJUMP_Y_SPEED = 9 * TILE_SIZE / 36  # Increased from 8 for higher jump
+
+# Gravity and acceleration
 GRAVITY_UP = 0.55 * TILE_SIZE / 36
-GRAVITY_DOWN = 0.3 * TILE_SIZE / 36
-ACCELERAION = 0.001 * TILE_SIZE / 36  # Note: Consider fixing the typo to ACCELERATION
-DECCELARATION = 0.1 * TILE_SIZE / 36  # Note: Consider fixing the typo to DECELERATION
-MAX_X_SPEED = 8 * TILE_SIZE / 36
-MAX_Y_SPEED = 11 * TILE_SIZE / 36
+GRAVITY_DOWN = 0.35 * TILE_SIZE / 36
+ACCELERATION = 0.01 * TILE_SIZE / 36
+DECELERATION = 0.1 * TILE_SIZE / 36
+
+# Enhanced speed caps
+MAX_X_SPEED = 8 * TILE_SIZE / 36      # Increased from 8 for higher speed cap
+MAX_Y_SPEED = 11 * TILE_SIZE / 36      # Increased from 11 for higher vertical speed
+SUPER_MAX_X_SPEED = 20 * TILE_SIZE / 36  # New: Ultra high speed cap for special moves
+
+# Wall momentum system
 WALL_MOMENTUM_PRESERVE = 0.15
 WALL_MOMENTUM_FRAMES = 3
+
+# Enhanced wall jump setback duration
+WALLJUMP_SETBACK_FRAMES = 3  # New: How long the setback force lasts
+WALLJUMP_SETBACK_DECAY = 0.9  # New: How quickly setback force decays
 
 # =============================================================================
 # GAMEPLAY TIMING
@@ -38,12 +51,6 @@ WALL_MOMENTUM_FRAMES = 3
 PLAYER_BUFFER = 5
 COYOTE_TIME = 6
 BASE_IMG_DUR = 20
-
-# Death and finish delays (in frames)
-DEATH_DELAY_FRAMES = 90
-DEATH_DELAY_FRAMES_AI = 0
-FINISH_DELAY_FRAMES = 90
-FINISH_DELAY_FRAMES_AI = 30
 
 # Jump animation timings
 JUMP_ANTICIPATION_FRAMES = 3

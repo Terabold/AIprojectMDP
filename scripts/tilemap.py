@@ -243,3 +243,78 @@ class Tilemap:
                 
                 surf.blit(img, (x_pos, y_pos))
                 processed_tiles.add(loc)
+
+    def render_ai(self, surf, offset=(0, 0)):
+        tile_colors = {
+            'spikes': (255, 0, 0),       # Red - dangerous
+            'finish': (255, 255, 255),   # Green - goal
+            'kill': (139, 0, 0),         # Dark Red - deadly
+            'platform': (70, 130, 180),  # Steel Blue - moving platform
+            'default': (128, 128, 128)   # Gray - unknown types
+        }
+        
+        # Screen culling for performance
+        start_x = offset[0] // self.tile_size - 1
+        end_x = (offset[0] + surf.get_width()) // self.tile_size + 2
+        start_y = offset[1] // self.tile_size - 1
+        end_y = (offset[1] + surf.get_height()) // self.tile_size + 2
+        
+        processed_tiles = set()
+        
+        # Render offgrid tiles
+        for tile in self.offgrid_tiles:
+            base_type = tile[TYPE].split()[0]
+            color = tile_colors.get(base_type, tile_colors['default'])
+            
+            if base_type == 'spikes':
+                # Use the actual spike rect for proper collision visualization
+                rect = self._get_spike_rect(tile)
+                rect.x -= offset[0]
+                rect.y -= offset[1]
+            else:
+                rect = pygame.Rect(
+                    tile[POS][0] * self.tile_size - offset[0],
+                    tile[POS][1] * self.tile_size - offset[1],
+                    self.tile_size,
+                    self.tile_size
+                )
+            
+            pygame.draw.rect(surf, color, rect)
+        
+        # Render grid tiles
+        for x in range(start_x, end_x):
+            for y in range(start_y, end_y):
+                loc = f"{x};{y}"
+                
+                if loc not in self.tilemap or loc in processed_tiles:
+                    continue
+                    
+                tile = self.tilemap[loc]
+                
+                # Skip down parts to avoid duplicates
+                if tile[TYPE].endswith(' down'):
+                    continue
+                
+                base_type = tile[TYPE].split()[0]
+                color = tile_colors.get(base_type, tile_colors['default'])
+                
+                x_pos = tile[POS][0] * self.tile_size - offset[0]
+                y_pos = tile[POS][1] * self.tile_size - offset[1]
+                
+                # Handle special tile types with different dimensions
+                if base_type == 'spikes':
+                    # Use the actual spike rect for proper collision visualization
+                    rect = self._get_spike_rect(tile)
+                    rect.x -= offset[0]
+                    rect.y -= offset[1]
+                    pygame.draw.rect(surf, color, rect)
+                elif base_type == 'finish':
+                    # Finish tiles are 2 tiles tall
+                    rect = pygame.Rect(x_pos, y_pos, self.tile_size, self.tile_size * 2)
+                    pygame.draw.rect(surf, color, rect)
+                else:
+                    # Regular tiles
+                    rect = pygame.Rect(x_pos, y_pos, self.tile_size, self.tile_size)
+                    pygame.draw.rect(surf, color, rect)
+                
+                processed_tiles.add(loc)

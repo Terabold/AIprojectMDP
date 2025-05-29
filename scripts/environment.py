@@ -25,19 +25,6 @@ class PauseMenuScreen(MenuScreen):
             center_x, start_y
         )
 
-class LevelCompleteMenuScreen(MenuScreen):
-    def initialize(self):
-        self.title = "Level Complete!"
-        self.clear_buttons()
-        center_x = self.menu.display_size[0] // 2
-        start_y = int(self.menu.display_size[1] * 0.4)
-        
-        self.create_centered_button_list(
-            ['Next Map', 'Play Again', 'Main Menu'],
-            [self.menu.load_next_map, self.menu.reset, self.menu.return_to_main],
-            center_x, start_y
-        )
-
 class CongratulationsScreen(MenuScreen):
     def initialize(self):
         self.title = "Congratulations!"
@@ -62,7 +49,6 @@ class GameMenu:
         
         # Initialize menu screens
         self.pause_menu = PauseMenuScreen(self, "Game Paused")
-        self.level_complete_menu = LevelCompleteMenuScreen(self, "Level Complete!")
         self.congratulations_menu = CongratulationsScreen(self, "Congratulations!")
         self.active_menu = None
     
@@ -83,24 +69,15 @@ class GameMenu:
     def show_pause_menu(self):
         self.active_menu = self.pause_menu
         self.pause_menu.enable()
-        self.level_complete_menu.disable()
         self.congratulations_menu.disable()
         # Pause music when showing pause menu
         self.environment.pause_music()
     
-    def show_level_complete_menu(self):
-        self.active_menu = self.level_complete_menu
-        self.pause_menu.disable()
-        self.level_complete_menu.enable()
-        self.congratulations_menu.disable()
-    
     def show_congratulations_menu(self):
         self.active_menu = self.congratulations_menu
         self.pause_menu.disable()
-        self.level_complete_menu.disable()
         self.congratulations_menu.enable()
 
-    
     def load_next_map(self):
         current_map = game_state_manager.selected_map
         if current_map:
@@ -167,12 +144,6 @@ class Environment:
         self.asset_manager = AssetManager()
         self.assets = self.asset_manager.assets
         self.sfx = self.asset_manager.sfx
-        
-        # Adjust sound volumes for AI mode
-        if ai_train_mode:
-            for sound_list in self.sfx.values():
-                for sound in sound_list:
-                    sound.set_volume(0)
 
         if not self.ai_train_mode:
             star_images = load_images('stars', scale=IMGSCALE)
@@ -238,7 +209,6 @@ class Environment:
         self.timer.update()
     
     def render_timer(self):
-        # Skip rendering if in AI mode or font is missing
         if self.ai_train_mode or not self.timer_font:
             return
 
@@ -345,7 +315,8 @@ class Environment:
         maps_folder = os.path.join('data', 'maps')
         map_files = [f for f in os.listdir(maps_folder) if f.endswith('.json')]
         
-        return current_index < len(map_files) - 1
+        # Return True if this is the LAST map (no more maps after this one)
+        return current_index >= len(map_files) - 1
 
     def load_next_map(self):
         current_map = game_state_manager.selected_map
@@ -362,7 +333,6 @@ class Environment:
             self.reset()
     
     def process_human_input(self, events):
-        # Skip input processing in AI mode
         if self.ai_train_mode:
             return
             
@@ -382,7 +352,6 @@ class Environment:
     def update(self, dt):
         self.update_timer()
         
-        # Update animations (essential for gameplay logic)
         self.assets['finish'].update()
 
         if self.stars:
@@ -391,7 +360,7 @@ class Environment:
         if self.player.death:
             self.countframes += 1
             if not self.death_sound_played:
-                if not self.ai_train_mode:  # Only play sound for human players
+                if not self.ai_train_mode:  
                     self.sfx['death'].play()
                 self.death_sound_played = True
             
@@ -403,63 +372,62 @@ class Environment:
         elif self.player.finishLevel:
             self.countframes += 1
             if not self.finish_sound_played:
-                if not self.ai_train_mode:  # Only play sound for human players
+                if not self.ai_train_mode:  
                     self.sfx['finish'].play()
                 self.finish_sound_played = True
             
-            # Handle level completion
             completion_frames = 30 if self.ai_train_mode else 90
             if self.countframes >= completion_frames:
                 if self.ai_train_mode:
-                    # Auto-restart for AI training
-                    self.reset()
-                    return True  # Signal episode ended for AI
-                else:
-                    self.menu = True
                     if self.is_last_map():
-                        self.game_menu.show_level_complete_menu()
+                        self.load_map_id(0) 
                     else:
+                        self.load_next_map()  
+                    return True  
+                else:
+                    if not self.is_last_map():
+                        self.load_next_map()
+                    else:
+                        self.menu = True
                         self.game_menu.show_congratulations_menu()
-            
+        
         if not self.menu:
             self.player.update(self.tilemap, self.keys, self.countframes)
             
-            # Only update camera smoothly for human players
             if not self.ai_train_mode:
                 update_camera_smooth(self.player, self.scroll, self.display.get_width(), self.display.get_height())
             else:
-                # Simple camera following for AI (less computation)
                 player_rect = self.player.rect()
                 self.scroll[0] = player_rect.centerx - self.display.get_width() // 2
                 self.scroll[1] = player_rect.centery - self.display.get_height() // 2
                 
             self.render_scroll = (int(self.scroll[0]), int(self.scroll[1]))
-        
-        return False  # Episode continues
+    
+        return False
 
     def render(self):
         self.display.fill((8, 10, 38))
-    
-        if self.stars:
-            self.stars.render(self.display, offset=self.render_scroll)
+        fps = self.clock.get_fps()
+        fps_text = self.fps_font.render(f"{int(fps)}", True, (200, 120, 255))
+        self.display.blit(fps_text, (DISPLAY_SIZE[0]*0.95, 10))
 
-        # Always render player and tilemap (needed for collision detection)
-        self.tilemap.render(self.display, offset=self.render_scroll)
-        self.player.render(self.display, offset=self.render_scroll)
+        if self.ai_train_mode:
+            self.tilemap.render_ai(self.display, offset=self.render_scroll)
+            self.player.render_ai(self.display, offset=self.render_scroll)
+        else:
+            if self.stars:
+                self.stars.render(self.display, offset=self.render_scroll)
 
-        # Render UI only for human players
-        if not self.ai_train_mode:
+            self.tilemap.render(self.display, offset=self.render_scroll)
+            self.player.render(self.display, offset=self.render_scroll) 
+
             self.render_timer()
             
-            fps = self.clock.get_fps()
-            fps_text = self.fps_font.render(f"{int(fps)}", True, (200, 120, 255))
-            self.display.blit(fps_text, (DISPLAY_SIZE[0]*0.95, 10))
 
             if self.debug_mode and not self.menu:
                 self.debug_render()
             
             if self.menu:
-                # Update button hover states
                 mouse_pos = pygame.mouse.get_pos()
                 if self.game_menu.active_menu:
                     for button in self.game_menu.active_menu.buttons:
@@ -468,7 +436,6 @@ class Environment:
                 self.game_menu.draw(self.display)
 
     def process_menu_events(self, events):
-        # Skip menu processing in AI mode
         if self.ai_train_mode:
             return
             
@@ -480,7 +447,7 @@ class Environment:
                     else:
                         self.menu = False
                         self.game_menu.active_menu = None
-                        self.resume_music()  # Resume music when closing menu with escape
+                        self.resume_music() 
             
             self.game_menu.update(events)
 

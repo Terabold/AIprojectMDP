@@ -5,11 +5,13 @@ from scripts.menu import Menu
 from scripts.GameManager import game_state_manager
 from scripts.editor import EditorMenu
 from scripts.assets import AssetManager
+from scripts.utils import scale_font
 
 class LoadingScreen:
     def __init__(self, display):
         self.display = display
-        self.font = pygame.font.Font(FONT, 36)
+        font = scale_font(40, DISPLAY_SIZE)
+        self.font = pygame.font.Font(FONT, font)
         self.background = pygame.image.load(MENUBG)
         self.background = pygame.transform.scale(self.background, DISPLAY_SIZE)
         
@@ -48,6 +50,7 @@ class Engine:
         self.game = Game(self.display, self.clock)
         self.menu = Menu(self.display, self.clock)
         self.editor = None
+        self.trainer = None # Placeholder for future trainer component
         
         self.state = {'game': self.game, 'editor': self.editor, 'menu': self.menu}
         
