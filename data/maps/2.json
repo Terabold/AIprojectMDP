@@ -2467,22 +2467,6 @@
             ],
             "rotation": 0
         },
-        "45;5": {
-            "type": "finish up",
-            "variant": 0,
-            "pos": [
-                45,
-                5
-            ]
-        },
-        "45;6": {
-            "type": "finish down",
-            "variant": 0,
-            "pos": [
-                45,
-                6
-            ]
-        },
         "46;6": {
             "type": "finish up",
             "variant": 0,
@@ -2497,54 +2481,6 @@
             "pos": [
                 46,
                 7
-            ]
-        },
-        "46;4": {
-            "type": "finish up",
-            "variant": 0,
-            "pos": [
-                46,
-                4
-            ]
-        },
-        "46;5": {
-            "type": "finish down",
-            "variant": 0,
-            "pos": [
-                46,
-                5
-            ]
-        },
-        "45;3": {
-            "type": "finish up",
-            "variant": 0,
-            "pos": [
-                45,
-                3
-            ]
-        },
-        "45;4": {
-            "type": "finish down",
-            "variant": 0,
-            "pos": [
-                45,
-                4
-            ]
-        },
-        "46;2": {
-            "type": "finish up",
-            "variant": 0,
-            "pos": [
-                46,
-                2
-            ]
-        },
-        "46;3": {
-            "type": "finish down",
-            "variant": 0,
-            "pos": [
-                46,
-                3
             ]
         }
     },

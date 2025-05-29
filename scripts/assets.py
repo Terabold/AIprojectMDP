@@ -1,7 +1,6 @@
 from scripts.utils import load_images, load_sounds, Animation, load_sound
 from scripts.constants import PLAYERS_IMAGE_SIZE,IMGSCALE, FINISHSCALE
 import pygame
-from functools import lru_cache
 
 
 class AssetManager:
@@ -69,7 +68,6 @@ class AssetManager:
             'wall_jump_right': load_sound('jump/wall_jump_right.ogg', volume=0.01)  
         }
 
-    @lru_cache(maxsize=4)
     def get_rotated_image(self, tile_type, variant, rotation):
         key = (tile_type, variant, rotation)  
         

@@ -33,7 +33,7 @@ class Engine:
     def __init__(self):
         pygame.init()
         pygame.display.set_caption('Super Terboy')
-        self.display = pygame.display.set_mode(DISPLAY_SIZE)
+        self.display = pygame.display.set_mode(DISPLAY_SIZE, pygame.SCALED | pygame.DOUBLEBUF | pygame.HWSURFACE, vsync=1)
         self.clock = pygame.time.Clock()
         
         # Show loading screen
@@ -46,8 +46,8 @@ class Engine:
         
         # Initialize game components
         self.game = Game(self.display, self.clock)
-        self.editor = EditorMenu(self.display)
         self.menu = Menu(self.display)
+        self.editor = None
         
         self.state = {'game': self.game, 'editor': self.editor, 'menu': self.menu}
         
@@ -67,8 +67,12 @@ class Engine:
 
             if current_state == 'game':
                 self.state[current_state].run(dt)
-            else:
-                self.state[current_state].run()
+            elif current_state == 'menu':
+                self.menu.run()
+            elif current_state == 'editor':
+                # Always create a new EditorMenu with the latest selected_map!
+                editor_menu = EditorMenu(self.display)
+                editor_menu.run()
 
             previous_state = current_state
             pygame.display.flip()

@@ -63,9 +63,21 @@ class Player:
         
         self.collisions = {'up': False, 'down': False, 'right': False, 'left': False}
         if not self.death and not self.finishLevel:
-            self.velocity[0] += (int(keys['right']) - int(keys['left'])) * PLAYER_SPEED
-            x_acceleration = (1 - DECCELARATION) if int(keys['right']) - int(keys['left']) == 0 else (1 - ACCELERAION)
-            self.velocity[0] = max(-MAX_X_SPEED, min(MAX_X_SPEED, self.velocity[0] * x_acceleration))
+            if self.grounded:
+                move_dir = int(keys['right']) - int(keys['left'])
+                # If changing direction sharply: snap velocity to zero
+                if move_dir != 0 and ((self.velocity[0] > 0 and move_dir < 0) or (self.velocity[0] < 0 and move_dir > 0)):
+                    self.velocity[0] = 0
+                # Now apply acceleration/deceleration as normal
+                self.velocity[0] += move_dir * PLAYER_SPEED
+                x_acceleration = (1 - DECCELARATION) if move_dir == 0 else (1 - ACCELERAION)
+                self.velocity[0] = max(-MAX_X_SPEED, min(MAX_X_SPEED, self.velocity[0] * x_acceleration))
+            else:
+                # Air control (keep as is)
+                move_dir = int(keys['right']) - int(keys['left'])
+                self.velocity[0] += move_dir * PLAYER_SPEED
+                x_acceleration = (1 - DECCELARATION) if move_dir == 0 else (1 - ACCELERAION)
+                self.velocity[0] = max(-MAX_X_SPEED, min(MAX_X_SPEED, self.velocity[0] * x_acceleration))
 
             gravity = GRAVITY_DOWN if self.velocity[1] > 0 and not keys['jump'] else GRAVITY_UP
             self.velocity[1] = max(-MAX_Y_SPEED, min(MAX_Y_SPEED, self.velocity[1] + gravity))
@@ -120,10 +132,13 @@ class Player:
             self.velocity[1] = 0
 
         # Check if we just hit a wall this frame
-        now_colliding_wall = self.collisions['left'] or self.collisions['right']
-        if now_colliding_wall and not self.was_colliding_wall:  
+        just_hit_right = self.collisions['right'] and not self.was_colliding_wall and self.facing_right
+        just_hit_left = self.collisions['left'] and not self.was_colliding_wall and not self.facing_right
+
+        if just_hit_right or just_hit_left:
             self.sfx['collide'].play()
-        self.was_colliding_wall = now_colliding_wall
+
+        self.was_colliding_wall = self.collisions['left'] or self.collisions['right']
 
         self.air_time += 1
         if self.collisions['down']:

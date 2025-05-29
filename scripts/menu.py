@@ -72,14 +72,11 @@ class Menu:
         game_state_manager.player_type = value
 
     def _select_map_for_editor(self, map_file):
-        """Select a map for editing"""
-        # Fixed: Pass the full path correctly
         self.selected_map = os.path.join('data', 'maps', map_file)
         game_state_manager.selected_map = self.selected_map
         self.edit_maps()
 
     def create_new_map(self):
-        """Create a new map for editing"""
         game_state_manager.selected_map = None  # Signal to create new map
         self.edit_maps()
 

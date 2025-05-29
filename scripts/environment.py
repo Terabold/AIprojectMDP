@@ -69,18 +69,15 @@ class GameMenu:
     def resume_game(self):
         self.environment.menu = False
         self.active_menu = None
-        # Resume music when returning to game
         self.environment.resume_music()
     
     def reset(self):
-        # Don't stop music here - let the environment handle it
         self.environment.reset()
-    
+
     def return_to_main(self):
         self.environment.return_to_main()
     
     def restart_game(self):
-        # Don't stop music here - let the environment handle it
         self.environment.restart_game()
     
     def show_pause_menu(self):
@@ -158,7 +155,7 @@ class Environment:
         # Initialize fonts only if not in AI mode
         if not self.ai_train_mode:
             pygame.font.init()
-            self.fps_font = pygame.font.Font(FONT, scale_font(36, DISPLAY_SIZE))
+            self.fps_font = pygame.font.Font(None, scale_font(36, DISPLAY_SIZE))
             self.timer_font = pygame.font.Font(FONT, scale_font(24, DISPLAY_SIZE))
         else:
             self.fps_font = None
@@ -220,11 +217,6 @@ class Environment:
             pygame.mixer.music.stop()
             self.music_playing = False
             self.music_paused = False
-
-    def restart_music(self):
-        if not self.ai_train_mode:
-            self.stop_music()
-            self.start_music()
 
     def update_timer(self):
         # Start timer and music on first movement
@@ -317,9 +309,6 @@ class Environment:
             self.resume_music()
 
     def restart_game(self):
-        # Restart music when restarting the entire game
-        if not self.ai_train_mode:
-            self.restart_music()
         self.load_map_id(0)
 
     def load_map_id(self, map_id):
@@ -461,6 +450,10 @@ class Environment:
         # Render UI only for human players
         if not self.ai_train_mode:
             self.render_timer()
+            
+            fps = self.clock.get_fps()
+            fps_text = self.fps_font.render(f"FPS: {int(fps)}", True, (255, 255, 0))
+            self.display.blit(fps_text, (10, 80))
 
             if self.debug_mode and not self.menu:
                 self.debug_render()
@@ -492,15 +485,11 @@ class Environment:
             self.game_menu.update(events)
 
     def debug_render(self):
-        # Skip debug rendering in AI mode
         if self.ai_train_mode:
             return
             
         draw_debug_info(self, self.display, self.render_scroll)  
-        fps = self.clock.get_fps()
-        if self.fps_font:
-            fps_text = self.fps_font.render(f"FPS: {int(fps)}", True, (255, 255, 0))
-            self.display.blit(fps_text, (10, 80))
+
     
     def get_state(self):
         

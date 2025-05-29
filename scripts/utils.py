@@ -172,18 +172,23 @@ class Animation:
         self.img_duration = img_dur
         self.done = False
         self.frame = 0
-    
+        self.enabled = True  # Optional: only if you added this
+
     def copy(self):
-        return Animation(self.images, self.img_duration, self.loop)
-    
+        new_anim = Animation(self.images, self.img_duration, self.loop)
+        new_anim.enabled = self.enabled
+        return new_anim
+
     def update(self, dt=1.0):
+        if not self.enabled:
+            return
         if self.loop:
             self.frame = (self.frame + dt) % (self.img_duration * len(self.images))
         else:
             self.frame = min(self.frame + dt, self.img_duration * len(self.images) - 1)
             if self.frame >= self.img_duration * len(self.images) - 1:
                 self.done = True
-    
+
     def img(self):
         return self.images[int(self.frame / self.img_duration)]
 

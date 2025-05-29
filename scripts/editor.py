@@ -3,9 +3,9 @@ import sys
 import pygame
 import os
 import json
-from scripts.utils import load_images, load_image, find_next_numeric_filename, MenuScreen, load_sounds, render_text_with_shadow
+from scripts.utils import load_images, load_image, find_next_numeric_filename
 from scripts.tilemap import Tilemap
-from scripts.constants import TILE_SIZE, DISPLAY_SIZE, FPS, PHYSICS_TILES, FONT, MENUBG, calculate_ui_constants, EDITOR_SCROLL_SPEED
+from scripts.constants import TILE_SIZE, DISPLAY_SIZE, FPS, PHYSICS_TILES, FONT, EDITOR_SCROLL_SPEED
 from scripts.GameManager import game_state_manager
 
 class EditorMenu:
