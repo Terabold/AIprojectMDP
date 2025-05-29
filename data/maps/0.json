@@ -2413,22 +2413,6 @@
             ],
             "rotation": 180
         },
-        "20;4": {
-            "type": "finish up",
-            "variant": 4,
-            "pos": [
-                20,
-                4
-            ]
-        },
-        "20;5": {
-            "type": "finish down",
-            "variant": 4,
-            "pos": [
-                20,
-                5
-            ]
-        },
         "10;0": {
             "type": "spikes",
             "variant": 0,
@@ -2537,6 +2521,22 @@
                 -1
             ],
             "rotation": 270
+        },
+        "21;4": {
+            "type": "finish up",
+            "variant": 0,
+            "pos": [
+                21,
+                4
+            ]
+        },
+        "21;5": {
+            "type": "finish down",
+            "variant": 0,
+            "pos": [
+                21,
+                5
+            ]
         }
     },
     "offgrid": [],

@@ -96,16 +96,13 @@ class GameMenu:
         self.pause_menu.disable()
         self.level_complete_menu.enable()
         self.congratulations_menu.disable()
-        # Pause music when level is complete (instead of stopping)
-        self.environment.pause_music()
     
     def show_congratulations_menu(self):
         self.active_menu = self.congratulations_menu
         self.pause_menu.disable()
         self.level_complete_menu.disable()
         self.congratulations_menu.enable()
-        # Pause music when showing congratulations (instead of stopping)
-        self.environment.pause_music()
+
     
     def load_next_map(self):
         current_map = game_state_manager.selected_map
@@ -116,8 +113,6 @@ class GameMenu:
             
             if f'{current_index}.json' in map_files and current_index < len(map_files) - 1:
                 self.environment.load_map_id(current_index + 1)
-                # Resume music when loading next map
-                self.environment.resume_music()
             else:
                 self.reset()
         else:
@@ -199,56 +194,34 @@ class Environment:
             self.input_handler = None
             self.game_menu = None
 
-    def start_music(self):
-        """Start playing background music"""
+    def start_music(self):      
         if not self.ai_train_mode and not self.music_playing:
-            try:
-                pygame.mixer.music.load(MUSIC_PATH)
-                pygame.mixer.music.set_volume(MUSIC_VOLUME)
-                pygame.mixer.music.play(-1)  # Loop indefinitely
-                self.music_playing = True
-                self.music_paused = False
-                print("Music started successfully")
-            except Exception as e:
-                print(f"Error starting music: {e}")
-
-    def play_music(self):
-        """Alias for start_music for backward compatibility"""
+            pygame.mixer.music.load(MUSIC_PATH)
+            pygame.mixer.music.set_volume(MUSIC_VOLUME)
+            pygame.mixer.music.play(-1)  # Loop indefinitely
+            self.music_playing = True
+            self.music_paused = False
+           
+    def play_music(self):     
         self.start_music()
 
     def pause_music(self):
-        """Pause the background music"""
         if not self.ai_train_mode and self.music_playing and not self.music_paused:
-            try:
-                pygame.mixer.music.pause()
-                self.music_paused = True
-                print("Music paused")
-            except Exception as e:
-                print(f"Error pausing music: {e}")
-
-    def resume_music(self):
-        """Resume the paused background music"""
+            pygame.mixer.music.pause()
+            self.music_paused = True
+                               
+    def resume_music(self):     
         if not self.ai_train_mode and self.music_playing and self.music_paused:
-            try:
-                pygame.mixer.music.unpause()
-                self.music_paused = False
-                print("Music resumed")
-            except Exception as e:
-                print(f"Error resuming music: {e}")
+            pygame.mixer.music.unpause()
+            self.music_paused = False
 
     def stop_music(self):
-        """Stop the background music"""
         if not self.ai_train_mode and self.music_playing:
-            try:
-                pygame.mixer.music.stop()
-                self.music_playing = False
-                self.music_paused = False
-                print("Music stopped")
-            except Exception as e:
-                print(f"Error stopping music: {e}")
+            pygame.mixer.music.stop()
+            self.music_playing = False
+            self.music_paused = False
 
     def restart_music(self):
-        """Restart the music from the beginning"""
         if not self.ai_train_mode:
             self.stop_music()
             self.start_music()
@@ -444,8 +417,6 @@ class Environment:
                 if not self.ai_train_mode:  # Only play sound for human players
                     self.sfx['finish'].play()
                 self.finish_sound_played = True
-                # Pause music on level finish (instead of stopping)
-                self.pause_music()
             
             # Handle level completion
             completion_frames = 30 if self.ai_train_mode else 90
@@ -532,7 +503,7 @@ class Environment:
             self.display.blit(fps_text, (10, 80))
     
     def get_state(self):
-        """Return game state for AI training"""
+        
         if self.ai_train_mode:
             player_rect = self.player.rect()
             return {
@@ -550,13 +521,13 @@ class Environment:
         return None
     
     def set_action(self, action):
-        """Set AI action"""
+        
         if self.ai_train_mode:
             self.keys = action
             self.buffer_times['jump'] = min(self.buffer_times['jump'] + 1, PLAYER_BUFFER + 1) if action['jump'] else 0
     
     def get_reward(self):
-        """Calculate reward for AI training"""
+        
         if not self.ai_train_mode:
             return 0
             
@@ -584,23 +555,23 @@ class Environment:
         return reward
     
     def is_episode_done(self):
-        """Check if episode is complete for AI training"""
+        
         return self.player.death or self.player.finishLevel
     
     def get_action_space_size(self):
-        """Return the size of the action space for AI"""
+        
         # Actions: left, right, jump (each can be True/False)
         # This gives us 2^3 = 8 possible action combinations
         return 8
     
     def get_state_space_size(self):
-        """Return the size of the state space for AI"""
+        
         # This depends on how you structure your state representation
         # You might want to normalize and flatten the state dict
         return len(self.get_normalized_state()) if self.ai_train_mode else 0
     
     def get_normalized_state(self):
-        """Get normalized state as a flat array for AI training"""
+        
         if not self.ai_train_mode:
             return []
             
