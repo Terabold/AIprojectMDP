@@ -34,6 +34,7 @@ class LoadingScreen:
 class Engine:
     def __init__(self):
         pygame.init()
+        pygame.joystick.quit()
         pygame.display.set_caption('Ascent')
         self.display = pygame.display.set_mode(DISPLAY_SIZE)
         self.clock = pygame.time.Clock()

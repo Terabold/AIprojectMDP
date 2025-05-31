@@ -201,10 +201,11 @@ class Tilemap:
         
         # PERFORMANCE OPTIMIZATION: Screen culling for grid tiles
         # Only render tiles that are visible on screen
-        start_x = offset[0] // self.tile_size - 1  # -1 for buffer
-        end_x = (offset[0] + surf.get_width()) // self.tile_size + 2  # +2 for buffer
-        start_y = offset[1] // self.tile_size - 1
-        end_y = (offset[1] + surf.get_height()) // self.tile_size + 2
+        # Fix: Convert to integers for range()
+        start_x = int(offset[0] // self.tile_size) - 1  # -1 for buffer
+        end_x = int((offset[0] + surf.get_width()) // self.tile_size) + 2  # +2 for buffer
+        start_y = int(offset[1] // self.tile_size) - 1
+        end_y = int((offset[1] + surf.get_height()) // self.tile_size) + 2
         
         # Track processed tiles to avoid rendering 'down' parts separately
         processed_tiles = set()
@@ -244,7 +245,7 @@ class Tilemap:
                 surf.blit(img, (x_pos, y_pos))
                 processed_tiles.add(loc)
 
-    def render_ai(self, surf, offset=(0, 0)):
+    def render_ai(self, surf, offset=(0, 0), player_pos=None, finish_pos=None, distance=None):
         tile_colors = {
             'spikes': (255, 0, 0),       # Red - dangerous
             'finish': (255, 255, 255),   # Green - goal
@@ -318,3 +319,15 @@ class Tilemap:
                     pygame.draw.rect(surf, color, rect)
                 
                 processed_tiles.add(loc)
+
+        if player_pos and finish_pos:
+            x1 = player_pos[0] * self.tile_size - offset[0] + self.tile_size // 2
+            y1 = player_pos[1] * self.tile_size - offset[1] + self.tile_size // 2
+            x2 = finish_pos[0] * self.tile_size - offset[0] + self.tile_size // 2
+            y2 = finish_pos[1] * self.tile_size - offset[1] + self.tile_size // 2
+            pygame.draw.line(surf, (0, 255, 0), (x1, y1), (x2, y2), 3)
+            if distance is not None:
+                font = pygame.font.SysFont(None, 24)
+                text = font.render(f"Dist: {distance}", True, (255, 255, 255))
+                surf.blit(text, ((x1 + x2) // 2, (y1 + y2) // 2))
+    

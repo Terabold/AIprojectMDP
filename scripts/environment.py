@@ -9,7 +9,7 @@ from scripts.GameTimer import GameTimer
 from scripts.utils import (
     load_images, Animation, 
     draw_debug_info, update_camera_smooth, MenuScreen,
-    calculate_ui_constants, scale_font
+    calculate_ui_constants, scale_font, get_distance_to_finish
 )
 
 class PauseMenuScreen(MenuScreen):
@@ -407,20 +407,20 @@ class Environment:
 
     def render(self):
         self.display.fill((8, 10, 38))
-        fps = self.clock.get_fps()
-        fps_text = self.fps_font.render(f"{int(fps)}", True, (200, 120, 255))
-        self.display.blit(fps_text, (DISPLAY_SIZE[0]*0.95, 10))
 
         if self.ai_train_mode:
-            self.tilemap.render_ai(self.display, offset=self.render_scroll)
+            distance, player_pos, finish_pos = get_distance_to_finish(self)
+            self.tilemap.render_ai(self.display, offset=self.render_scroll, distance=distance, player_pos=player_pos, finish_pos=finish_pos)
             self.player.render_ai(self.display, offset=self.render_scroll)
         else:
             if self.stars:
                 self.stars.render(self.display, offset=self.render_scroll)
-
-            self.tilemap.render(self.display, offset=self.render_scroll)
+            self.tilemap.render(surf=self.display, offset=self.scroll)
             self.player.render(self.display, offset=self.render_scroll) 
 
+            fps = self.clock.get_fps()
+            fps_text = self.fps_font.render(f"{int(fps)}", True, (200, 120, 255))
+            self.display.blit(fps_text, (DISPLAY_SIZE[0]*0.95, 10))
             self.render_timer()
             
 
@@ -457,118 +457,117 @@ class Environment:
             
         draw_debug_info(self, self.display, self.render_scroll)  
 
-    
-    def get_state(self):
         
-        if self.ai_train_mode:
-            player_rect = self.player.rect()
-            return {
-                'player_pos': (player_rect.centerx, player_rect.centery),
-                'player_vel': self.player.velocity,
-                'player_grounded': self.player.grounded,
-                'player_air_time': self.player.air_time,
-                'physics_tiles': self.tilemap.physics_rects_around(self.player.pos),
-                'interactive_tiles': self.tilemap.interactive_rects_around(self.player.pos),
-                'collisions': self.player.collisions,
-                'finished': self.player.finishLevel,
-                'dead': self.player.death,
-                'scroll': self.render_scroll  # Include camera position for spatial awareness
-            }
-        return None
-    
-    def set_action(self, action):
+    def state(self):     
+        state_data = []
         
-        if self.ai_train_mode:
-            self.keys = action
-            self.buffer_times['jump'] = min(self.buffer_times['jump'] + 1, PLAYER_BUFFER + 1) if action['jump'] else 0
-    
-    def get_reward(self):
+        # === PLAYER STATE (8 values) ===
+        player_rect = self.player.rect()
         
-        if not self.ai_train_mode:
-            return 0
-            
-        reward = 0
-        
-        # Death penalty
-        if self.player.death:
-            reward -= 100
-        
-        # Level completion reward
-        elif self.player.finishLevel:
-            reward += 1000
-            # Time bonus (faster completion = higher reward)
-            time_bonus = max(0, 100 - self.timer.current_time)
-            reward += time_bonus
-        
-        # Small reward for forward progress
-        else:
-            # Encourage moving right (assuming levels progress rightward)
-            reward += self.player.pos[0] * 0.01
-            
-            # Small penalty for time to encourage efficiency
-            reward -= 0.1
-        
-        return reward
-    
-    def is_episode_done(self):
-        
-        return self.player.death or self.player.finishLevel
-    
-    def get_action_space_size(self):
-        
-        # Actions: left, right, jump (each can be True/False)
-        # This gives us 2^3 = 8 possible action combinations
-        return 8
-    
-    def get_state_space_size(self):
-        
-        # This depends on how you structure your state representation
-        # You might want to normalize and flatten the state dict
-        return len(self.get_normalized_state()) if self.ai_train_mode else 0
-    
-    def get_normalized_state(self):
-        
-        if not self.ai_train_mode:
-            return []
-            
-        state = self.get_state()
-        if not state:
-            return []
-        
-        # Normalize and flatten the state
-        normalized = []
-        
-        # Player position (normalized to screen/level size)
-        normalized.extend([
-            state['player_pos'][0] / 1000,  # Adjust based on your level width
-            state['player_pos'][1] / 1000   # Adjust based on your level height
-        ])
+        # Player position (normalized to map bounds)
+        # Assuming maps are roughly 0-1000 pixels in each direction
+        norm_x = player_rect.centerx / 1980.0  # Adjusted for larger maps
+        norm_y = player_rect.centery / 1080.0
+        state_data.extend([norm_x, norm_y])
         
         # Player velocity (normalized)
-        normalized.extend([
-            max(-1, min(1, state['player_vel'][0] / 10)),  # Adjust max velocity
-            max(-1, min(1, state['player_vel'][1] / 10))
+        # Max speeds from constants: MAX_X_SPEED, MAX_Y_SPEED
+        norm_vel_x = self.player.velocity[0] / MAX_X_SPEED
+        norm_vel_y = self.player.velocity[1] / MAX_Y_SPEED
+        state_data.extend([norm_vel_x, norm_vel_y])
+        
+        # Player state flags (binary)
+        state_data.extend([
+            1.0 if self.player.grounded else 0.0,
+            1.0 if self.player.facing_right else 0.0,
+            1.0 if self.player.jump_available else 0.0,
+            1.0 if (self.player.collisions['left'] or self.player.collisions['right']) else 0.0
         ])
         
-        # Player state flags
-        normalized.extend([
-            1.0 if state['player_grounded'] else 0.0,
-            min(1.0, state['player_air_time'] / 60),  # Normalize air time
-        ])
+        # === FINISH LINE INFORMATION (3 values) ===
+        distance, player_pos, finish_pos = get_distance_to_finish(self)
         
-        # Collision flags  
-        collisions = state['collisions']
-        normalized.extend([
-            1.0 if collisions.get('top', False) else 0.0,
-            1.0 if collisions.get('bottom', False) else 0.0,
-            1.0 if collisions.get('left', False) else 0.0,
-            1.0 if collisions.get('right', False) else 0.0,
-        ])
+        if finish_pos is not None:
+            # Direction to finish (normalized)
+            dx = finish_pos[0] - player_pos[0]
+            dy = finish_pos[1] - player_pos[1]
+            
+            # Normalize distance (assuming max distance of ~100 tiles)
+            norm_distance = min(distance / 100.0, 1.0) if distance else 0.0
+            
+            # Direction vector (normalized)
+            max_dist = max(abs(dx), abs(dy), 1)  # Avoid division by zero
+            norm_dx = dx / max_dist
+            norm_dy = dy / max_dist
+            
+            state_data.extend([norm_distance, norm_dx, norm_dy])
+        else:
+            state_data.extend([1.0, 0.0, 0.0])  # No finish found
         
-        # Game state flags
-        normalized.extend([
-            1.0 if state['finished'] else 0.0,
-            1.0 if state['dead'] else 0.0,
-        ])
+        # === SURROUNDING TILES (36 values: 6x6 grid) ===
+        # Check tiles in a 6x6 grid around player (3 tiles in each direction)
+        tile_size = self.tilemap.tile_size
+        player_tile_x = int(player_rect.centerx // tile_size)
+        player_tile_y = int(player_rect.centery // tile_size)
         
-        return normalized
+        # Tile type encoding (one-hot style but simplified)
+        # 0: empty/air, 1: solid/platform, 2: spikes/danger, 3: finish
+        for dy in range(-3, 3):  # 6 rows
+            for dx in range(-3, 3):  # 6 columns
+                check_x = player_tile_x + dx
+                check_y = player_tile_y + dy
+                loc = f"{check_x};{check_y}"
+                
+                tile_value = 0.0  # Default: empty
+                
+                if loc in self.tilemap.tilemap:
+                    tile = self.tilemap.tilemap[loc]
+                    tile_type = tile['type'].split()[0]
+                    
+                    if tile_type in PHYSICS_TILES:
+                        tile_value = 0.33  # Solid platform
+                    elif tile_type in ['spikes', 'kill']:
+                        tile_value = 0.66  # Dangerous
+                    elif tile_type == 'finish':
+                        tile_value = 1.0   # Goal
+                
+                # Also check offgrid tiles in this area
+                for offgrid_tile in self.tilemap.offgrid_tiles:
+                    tile_x = int(offgrid_tile['pos'][0])
+                    tile_y = int(offgrid_tile['pos'][1])
+                    if tile_x == check_x and tile_y == check_y:
+                        tile_type = offgrid_tile['type'].split()[0]
+                        if tile_type in ['spikes', 'kill']:
+                            tile_value = 0.66
+                        break
+                
+                state_data.append(tile_value)
+        
+        # === DANGER PROXIMITY (3 values) ===
+        # Check for immediate dangers around player
+        interactive_tiles = self.tilemap.interactive_rects_around(self.player.pos)
+        
+        danger_left = 0.0
+        danger_right = 0.0 
+        danger_below = 0.0
+        
+        for rect, tile_info in interactive_tiles:
+            if tile_info[0] in ['spikes', 'kill']:
+                # Check relative position to player
+                if rect.centerx < player_rect.centerx:
+                    danger_left = max(danger_left, 1.0 - abs(rect.centerx - player_rect.centerx) / (tile_size * 3))
+                elif rect.centerx > player_rect.centerx:
+                    danger_right = max(danger_right, 1.0 - abs(rect.centerx - player_rect.centerx) / (tile_size * 3))
+                
+                if rect.centery > player_rect.centery:
+                    danger_below = max(danger_below, 1.0 - abs(rect.centery - player_rect.centery) / (tile_size * 3))
+        
+        state_data.extend([danger_left, danger_right, danger_below])
+        
+        # Ensure we have exactly 50 values (8 + 3 + 36 + 3 = 50)
+        assert len(state_data) == 50, f"Expected 50 state values, got {len(state_data)}"
+        
+        # Clamp all values to [-1, 1] range for safety
+        state_data = [max(-1.0, min(1.0, val)) for val in state_data]
+        
+        return state_data

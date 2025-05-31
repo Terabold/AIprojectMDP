@@ -6,6 +6,27 @@ from scripts.constants import (
     MIN_FONT_SIZE, MAX_FONT_SIZE, REFERENCE_SIZE
 )
 
+def get_distance_to_finish(self):
+        # Fix: Call rect() as a method, not access as property
+        player_rect = self.player.rect()
+        player_pos = (player_rect.centerx // self.tilemap.tile_size, player_rect.centery // self.tilemap.tile_size)
+        
+        finish_tile = None
+        for loc, tile in self.tilemap.tilemap.items():
+            if tile['type'].startswith('finish'):
+                finish_tile = tile
+                break
+        
+        if finish_tile is not None:
+            finish_pos = (finish_tile['pos'][0], finish_tile['pos'][1])
+            # Manhattan distance
+            distance = abs(player_pos[0] - finish_pos[0]) + abs(player_pos[1] - finish_pos[1])
+            # For Euclidean, use: math.sqrt((player_pos[0] - finish_pos[0])**2 + (player_pos[1] - finish_pos[1])**2)
+            return distance, player_pos, finish_pos
+        
+        # Return default values if no finish tile found
+        return None, player_pos, None
+
 def load_image(path, scale=None, remove_color=DEFAULT_REMOVE_COLOR):
     img_path = Path(BASE_IMG_PATH) / path
     img = pygame.image.load(str(img_path)).convert()
